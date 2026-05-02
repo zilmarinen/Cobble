@@ -5,24 +5,63 @@
 //  Created by Zack Brown on 17/11/2025.
 //
 
+import Bivouac
+import Alluvium
 import Cobble
 import Combine
 import Deltille
 import Euclid
 import Foundation
-import Lattice
 import SceneKit
 import SwiftUI
 
 @MainActor
 internal class AppViewModel: ObservableObject {
     
-    internal let triangle = Triangle.zero
+    @Published internal var design: Design = .rounded {
+            
+        didSet {
+            
+            guard oldValue != design else { return }
+            
+            updateScene()
+        }
+    }
+    
+    @Published internal var tiling: Tiling = .rhombus {
+            
+        didSet {
+            
+            guard oldValue != tiling else { return }
+            
+            updateScene()
+        }
+    }
+    
+    internal let vertices: [Triangle.Vertex] = [.init(1, 0, 0),
+                                                .init(0, 1, 0),
+                                                .init(0, 0, 1),
+                                                .init(0, -1, 2),
+                                                .init(2, 0, -1),
+                                                .init(-1, 2, 0)]
+    
+    internal var tiles: [Triangle] {
+        
+        Array(Set(vertices.flatMap {
+            
+            $0.tiles
+        }))
+    }
     
     internal let scene = SCNScene()
     
     internal let gridColor: NSColor = .grid
     internal let gridAlternateColor: NSColor = .gridAlternate
+    
+    internal let colorPalette = ColorPalette(.primary,
+                                             .secondary,
+                                             .tertiary,
+                                             .quaternary)
     
     internal let model = SCNNode()
     internal let wireframe = SCNNode()
@@ -52,19 +91,19 @@ extension AppViewModel {
         
         var mesh = Mesh.empty
         
-        let tiles = [triangle] + triangle.perimeter
-        
         for tile in tiles {
          
-            let vertices = tile.vertices.filter { triangle.vertices.contains($0) }
+            let vertices = tile.vertices.filter { self.vertices.contains($0) }
             
             let wedge = Wedge(tile,
                               vertices)
             
-            let part = Mesh.footpath(tile,
-                                     wedge)
+            let part = Mesh.footpath(wedge,
+                                     design,
+                                     tiling,
+                                     colorPalette)
             
-            mesh = mesh.merge(part).translated(by: .init(0.0, 0.001, 0.0))
+            mesh = mesh.merge(part)
         }
         
         model.geometry = .init(mesh)
@@ -73,14 +112,16 @@ extension AppViewModel {
     
     private func updateSurface() {
         
-        var mesh = Mesh([])
+        var mesh = Mesh.empty
         
-        for tile in triangle.perimeter {
+        for tile in tiles {
             
             let color = tile.isPointy ? gridColor : gridAlternateColor
             
-            mesh = mesh.merge(tile.mesh(.tile,
-                                        .init(color)))
+            guard let surface = Mesh.surface(tile.vertices.position(.tile),
+                                             .init(color)) else { continue }
+            
+            mesh = mesh.merge(surface)
         }
         
         surface.geometry = .init(mesh)

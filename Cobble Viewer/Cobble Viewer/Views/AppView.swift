@@ -5,8 +5,9 @@
 //  Created by Zack Brown on 17/11/2025.
 //
 
+import Bivouac
+import Cobble
 import Deltille
-import Lattice
 import SceneKit
 import SwiftUI
 
@@ -51,15 +52,25 @@ struct AppView: View {
     
     @ViewBuilder
     var toolbar: some View {
-        Text("Toolbar")
-//        Picker("Stoop",
-//               selection: $viewModel.stoop) {
-//            
-//            ForEach(Stoop.allCases, id: \.self) { stoop in
-//                
-//                Text(stoop.id)
-//                    .id(stoop)
-//            }
-//        }
+
+        Picker("Design",
+               selection: $viewModel.design) {
+            
+            ForEach(Design.allCases, id: \.self) { design in
+                
+                Text(design.id)
+                    .id(design)
+            }
+        }
+        
+        Picker("Tiling",
+               selection: $viewModel.tiling) {
+            
+            ForEach(Tiling.allCases, id: \.self) { tiling in
+                
+                Text(tiling.id)
+                    .id(tiling)
+            }
+        }
     }
 }
