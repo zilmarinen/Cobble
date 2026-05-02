@@ -6,68 +6,103 @@
 //
 
 import Alluvium
+import Bivouac
 import Deltille
 import Euclid
-import Lattice
 
 extension Mesh {
     
-    public static func footpath(_ triangle: Triangle,
-                                _ wedge: Wedge,
+    //TODO: Remove method variant used for debugging
+    public static func footpath(_ wedge: Wedge,
+                                _ design: Design,
+                                _ tiling: Tiling,
                                 _ colorPalette: ColorPalette) -> Self {
-        
-        let scale = Triangle.Scale.tile
-        let size = 0.2
         
         switch wedge {
             
-        case .corner(let corner):
+        case .corner(let triangle,
+                     let corner):
             
-            let corners = corner.edges.flatMap {
-                
-                $0.corners.filter { $0 != corner }
-            }
+            let surface = tiling.mesh(triangle,
+                                      colorPalette)
             
-            guard let lhs = corners.first,
-                  let rhs = corners.last else { return .empty }
+            let stencil = design.corner(corner,
+                                        triangle)
             
-            let v0 = triangle.vertex(lhs).position(scale)
-            let v1 = triangle.vertex(rhs).position(scale)
-            let v2 = triangle.vertex(corner).position(scale)
-            let v3 = v2.lerp(v0, size)
-            let v4 = v2.lerp(v1, size)
+            return stencil.intersection(surface)
             
-            let path = [v4, v3, v2].path(colorPalette.color(for: .primary))
+        case .edge(let triangle,
+                   let edge):
             
-            guard let polygon = Polygon(shape: path) else { return .empty }
+            let surface = tiling.mesh(triangle,
+                                      colorPalette)
             
-            return Mesh([polygon])
+            let stencil = design.edge(edge,
+                                      triangle)
             
-        case .edge(let edge):
+            return stencil.intersection(surface)
             
-            let corners = triangle.corners.filter {
-                
-                !edge.corners.contains($0)
-            }
+        case .tile(let triangle,
+                   let corners):
             
-            guard let corner = corners.first,
-                  let lhs = edge.corners.first,
-                  let rhs = edge.corners.last  else { return .empty}
+            let surface = tiling.mesh(triangle,
+                                      colorPalette)
             
-            let v0 = triangle.vertex(lhs).position(scale)
-            let v1 = triangle.vertex(rhs).position(scale)
-            let v2 = triangle.vertex(corner).position(scale)
-            let v3 = v0.lerp(v2, size)
-            let v4 = v1.lerp(v2, size)
+            let stencil = design.tile(corners,
+                                      triangle)
             
-            let path = [v3, v4, v1, v0].path(colorPalette.color(for: .secondary))
-            
-            guard let polygon = Polygon(shape: path) else { return .empty }
-            
-            return Mesh([polygon])
-            
-        case .tile: return triangle.mesh(.tile,
-                                         colorPalette.color(for: .tertiary))
+            return stencil.intersection(surface)
         }
+    }
+    
+    public static func footpath(_ wedge: Wedge,
+                                _ design: Design,
+                                _ colorPalette: ColorPalette) -> Self {
+        
+        switch wedge {
+            
+        case .corner(let triangle,
+                     let corner):
+            
+            let surface = design.tiling.mesh(triangle,
+                                             colorPalette)
+            
+            let stencil = design.corner(corner,
+                                        triangle)
+            
+            return stencil.intersection(surface)
+            
+        case .edge(let triangle,
+                   let edge):
+            
+            let surface = design.tiling.mesh(triangle,
+                                             colorPalette)
+            
+            let stencil = design.edge(edge,
+                                      triangle)
+            
+            return stencil.intersection(surface)
+            
+        case .tile(let triangle,
+                   let corners):
+            
+            let surface = design.tiling.mesh(triangle,
+                                             colorPalette)
+            
+            let stencil = design.tile(corners,
+                                      triangle)
+            
+            return stencil.intersection(surface)
+        }
+    }
+}
+
+extension Mesh {
+    
+    internal static func tile(_ vectors: [Vector],
+                              _ color: Color) -> Mesh {
+        
+        .init(Polygon.tile(vectors,
+                           color))
     }
 }
