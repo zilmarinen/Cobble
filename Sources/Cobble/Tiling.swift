@@ -75,6 +75,7 @@ extension Tiling {
             let corners = division.map { stencil.vertex($0) }
             
             let part = Mesh.tile(corners,
+                                 0.02,
                                  colorPalette.random())
             
             mesh = mesh.union(part)
@@ -110,6 +111,7 @@ extension Tiling {
                 let v2 = v0.mid(corners[k])
                 
                 polygons.append(contentsOf: Polygon.tile([v0, v1, center, v2],
+                                                         0.02,
                                                          colorPalette.random()))
             }
         }
@@ -142,6 +144,7 @@ extension Tiling {
                 let v1 = corners[j]
                 
                 polygons.append(contentsOf: Polygon.tile([v0, v1, center],
+                                                         0.02,
                                                          colorPalette.color(for: i)))
             }
         }
@@ -177,10 +180,12 @@ extension Tiling {
                 let v2 = v0.mid(corners[k])
                 
                 polygons.append(contentsOf: Polygon.tile([v0, v1, v2],
+                                                         0.02,
                                                          colorPalette.random()))
                 
                 //TODO: Re-mesh inner tile
                 polygons.append(contentsOf: Polygon.tile([center, v2, v1],
+                                                         0.02,
                                                          color))
             }
         }
@@ -215,6 +220,7 @@ extension Tiling {
                 let v2 = v0.lerp(corners[k], 1.0 / 1.5)
                 
                 polygons.append(contentsOf: Polygon.tile([v0, v1, center, v2],
+                                                         0.02,
                                                          colorPalette.color(for: i)))
             }
         }

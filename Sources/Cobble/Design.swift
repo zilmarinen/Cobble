@@ -82,6 +82,7 @@ public enum Design: String,
         let vertices = corners.map { triangle.vertex($0).position(.tile) }
         
         let polygons = Polygon.tile(vertices,
+                                    0.02,
                                     .white)
         
         return Mesh(polygons)
@@ -182,6 +183,7 @@ extension Design {
         let v4 = v2.mid(v1)
         
         return Mesh.tile([v4, v3, v2],
+                         0.02,
                          .white)
     }
     
@@ -204,6 +206,7 @@ extension Design {
         let v4 = v1.mid(v2)
         
         return Mesh.tile([v3, v4, v1, v0],
+                         0.02,
                          .white)
     }
 }

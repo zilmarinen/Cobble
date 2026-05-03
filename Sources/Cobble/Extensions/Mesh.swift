@@ -96,13 +96,3 @@ extension Mesh {
         }
     }
 }
-
-extension Mesh {
-    
-    internal static func tile(_ vectors: [Vector],
-                              _ color: Color) -> Mesh {
-        
-        .init(Polygon.tile(vectors,
-                           color))
-    }
-}
